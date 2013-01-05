@@ -54,8 +54,8 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.io.hfile.CacheConfig;
 import org.apache.hadoop.hbase.monitoring.MonitoredTask;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.security.UnixUserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.mockito.Mockito;
 
@@ -449,8 +449,8 @@ public class TestStore extends TestCase {
 
     Configuration conf = HBaseConfiguration.create();
     // Set a different UGI so we don't get the same cached LocalFS instance
-    conf.set(UnixUserGroupInformation.UGI_PROPERTY_NAME,
-        "testhandleerrorsinflush,foo");
+    User user = User.createUserForTesting(conf,
+            "testhandleerrorsinflush", new String[]{"foo"});
     // Inject our faulty LocalFileSystem
     conf.setClass("fs.file.impl", FaultyFileSystem.class,
         FileSystem.class);
@@ -506,11 +506,10 @@ public class TestStore extends TestCase {
         int bufferSize,
         short replication,
         long blockSize,
-        int bytesPerChecksum,
         Progressable progress) throws IOException {
       return new FaultyOutputStream(super.create(p,
 		permission, overwrite, bufferSize, replication,
-		blockSize, bytesPerChecksum, progress), faultPos);
+		blockSize, progress), faultPos);
     }
 
     @Override

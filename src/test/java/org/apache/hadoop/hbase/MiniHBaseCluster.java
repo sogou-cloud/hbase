@@ -33,14 +33,13 @@ import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.master.HMaster;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.HRegionServer;
+import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.JVMClusterUtil;
 import org.apache.hadoop.hbase.util.Threads;
 import org.apache.hadoop.hbase.util.JVMClusterUtil.RegionServerThread;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.security.UnixUserGroupInformation;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hbase.util.HasThread;
 
 /**
@@ -55,10 +54,6 @@ public class MiniHBaseCluster {
   private LocalHBaseCluster hbaseCluster;
   // Cache this.  For some reason only works first time I get it.  TODO: Figure
   // out why.
-  private final static UserGroupInformation UGI;
-  static {
-    UGI = UserGroupInformation.getCurrentUGI();
-  }
 
   static long PREFERRED_ASSIGNMENT = 1000L;
   static long WAIT_FOR_LOADBALANCER = 2000L;
@@ -199,10 +194,9 @@ public class MiniHBaseCluster {
       // Else distributed filesystem.  Make a new instance per daemon.  Below
       // code is taken from the AppendTestUtil over in hdfs.
       Configuration c2 = new Configuration(c);
-      String username = UGI.getUserName() + "-hrs-" + index++;
-      UnixUserGroupInformation.saveToConf(c2,
-        UnixUserGroupInformation.UGI_PROPERTY_NAME,
-        new UnixUserGroupInformation(username, new String[]{"supergroup"}));
+      String username = User.getCurrent().getName() + "-hrs-" + index++;
+      User user = User.createUserForTesting(c, username,
+    	        new String[]{"supergroup"});
       return c2;
     }
 

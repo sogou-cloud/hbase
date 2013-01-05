@@ -1470,13 +1470,13 @@ public class HRegionServer implements HRegionInterface,
     
     for (Statistics fsStatistic : FileSystem.getAllStatistics()) {
       bytesRead += fsStatistic.getBytesRead();
-      bytesLocalRead += fsStatistic.getLocalBytesRead();
-      bytesRackLocalRead += fsStatistic.getLocalBytesRead();
+      // bytesLocalRead += fsStatistic.getLocalBytesRead();
+      // bytesRackLocalRead += fsStatistic.getLocalBytesRead();
       bytesWritten += fsStatistic.getBytesWritten();
-      filesCreated += fsStatistic.getFilesCreated();
-      filesRead += fsStatistic.getFilesRead();
-      cntWriteException += fsStatistic.getCntWriteException();
-      cntReadException += fsStatistic.getCntReadException();
+      // filesCreated += fsStatistic.getFilesCreated();
+      // filesRead += fsStatistic.getFilesRead();
+      // cntWriteException += fsStatistic.getCntWriteException();
+      // cntReadException += fsStatistic.getCntReadException();
     }
     
     this.metrics.bytesRead.set(bytesRead);
@@ -3481,14 +3481,14 @@ public class HRegionServer implements HRegionInterface,
       printUsageAndExit();
     }
   }
-
+/*
   @Override
   public ProtocolSignature getProtocolSignature(String protocol,
       long clientVersion, int clientMethodsHash) throws IOException {
     return ProtocolSignature.getProtocolSignature(
         this, protocol, clientVersion, clientMethodsHash);
   }
-
+*/
   @Override
   public int updateFavoredNodes(AssignmentPlan plan)
   throws IOException {

@@ -77,6 +77,7 @@ import org.apache.hadoop.hbase.regionserver.InternalScanner;
 import org.apache.hadoop.hbase.regionserver.MultiVersionConsistencyControl;
 import org.apache.hadoop.hbase.regionserver.Store;
 import org.apache.hadoop.hbase.regionserver.StoreFile;
+import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.FSUtils;
 import org.apache.hadoop.hbase.util.JVMClusterUtil.RegionServerThread;
@@ -90,7 +91,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.namenode.NameNode;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.TaskLog;
-import org.apache.hadoop.security.UnixUserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -1130,18 +1130,18 @@ public class HBaseTestingUtility {
    * @return A new configuration instance with a different user set into it.
    * @throws IOException
    */
-  public static Configuration setDifferentUser(final Configuration c)
+  public static User getDifferentUser(final Configuration c)
   throws IOException {
     FileSystem currentfs = FileSystem.get(c);
-    Preconditions.checkArgument(currentfs instanceof DistributedFileSystem);
+    if (!(currentfs instanceof DistributedFileSystem)) {
+      return User.getCurrent();
+    }
     // Else distributed filesystem.  Make a new instance per daemon.  Below
     // code is taken from the AppendTestUtil over in hdfs.
-    Configuration c2 = new Configuration(c);
-    String username = UserGroupInformation.getCurrentUGI().getUserName() + (USERNAME_SUFFIX++);
-    UnixUserGroupInformation.saveToConf(c2,
-      UnixUserGroupInformation.UGI_PROPERTY_NAME,
-      new UnixUserGroupInformation(username, new String[]{"supergroup"}));
-    return c2;
+    String username = User.getCurrent().getName() + USERNAME_SUFFIX++;
+    User user = User.createUserForTesting(c, username,
+        new String[]{"supergroup"});
+    return user;
   }
 
   /**

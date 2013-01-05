@@ -1235,8 +1235,8 @@ public abstract class HBaseServer {
           HRegionServer.callContext.set(call);
 
           CurCall.set(call);
-          UserGroupInformation previous = UserGroupInformation.getCurrentUGI();
-          UserGroupInformation.setCurrentUser(call.connection.ticket);
+          UserGroupInformation previous = UserGroupInformation.getCurrentUser();
+          //UserGroupInformation.setCurrentUser(call.connection.ticket);
           long start = System.currentTimeMillis ();
           try {
             // make the call
@@ -1247,7 +1247,7 @@ public abstract class HBaseServer {
             error = StringUtils.stringifyException(e);
           }
           long total = System.currentTimeMillis () - start;
-          UserGroupInformation.setCurrentUser(previous);
+          //UserGroupInformation.setCurrentUser(previous);
           CurCall.set(null);
 
           if (HRegionServer.enableServerSideProfilingForAllCalls

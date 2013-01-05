@@ -402,6 +402,8 @@ public class TestHLog  {
             assertTrue(recoveredFs.recoverLease(walPath));
           } catch (IOException e) {
             exception = e;
+          } catch (NoSuchMethodException e) {
+            exception = e;
           }
       }
     }

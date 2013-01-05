@@ -271,8 +271,7 @@ public abstract class AbstractHFileWriter extends SchemaConfigured
       FileSystem fs, Path path, int bytesPerChecksum) throws IOException {
     return fs.create(path, FsPermission.getDefault(), true,
         fs.getConf().getInt("io.file.buffer.size", 4096),
-        fs.getDefaultReplication(), fs.getDefaultBlockSize(), bytesPerChecksum,
-        null);
+        fs.getDefaultReplication(), fs.getDefaultBlockSize(), null);
   }
 
   /** A helper method to create HFile output streams in constructors */
@@ -300,8 +299,7 @@ public abstract class AbstractHFileWriter extends SchemaConfigured
     }
     return fs.create(path, FsPermission.getDefault(), true,
         fs.getConf().getInt("io.file.buffer.size", 4096),
-        fs.getDefaultReplication(), fs.getDefaultBlockSize(), bytesPerChecksum,
-        null);
+        fs.getDefaultReplication(), fs.getDefaultBlockSize(), null);
   }
 
 }

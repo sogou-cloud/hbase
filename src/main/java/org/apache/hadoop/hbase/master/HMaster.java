@@ -2196,14 +2196,14 @@ public class HMaster extends HasThread implements HMasterInterface,
     }
     return fragmentation;
   }
-
+/*
   @Override
   public ProtocolSignature getProtocolSignature(String protocol,
       long clientVersion, int clientMethodsHash) throws IOException {
     return ProtocolSignature.getProtocolSignature(
         this, protocol, clientVersion, clientMethodsHash);
   }
-
+*/
   /**
    * Report whether this master is currently the active master or not.
    * If not active master, we are parked on ZK waiting to become active.

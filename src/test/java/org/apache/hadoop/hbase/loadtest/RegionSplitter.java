@@ -194,9 +194,10 @@ public class RegionSplitter {
    * @throws IOException HBase IO problem
    * @throws InterruptedException user requested exit
    * @throws ParseException problem parsing user input
+ * @throws NoSuchMethodException 
    */
   public static void main(String []args)
-  throws IOException, InterruptedException, ParseException {
+  throws IOException, InterruptedException, ParseException, NoSuchMethodException {
     Configuration conf = HBaseConfiguration.create();
 
     // parse user input
@@ -488,7 +489,7 @@ public class RegionSplitter {
   }
 
   private static Set<Pair<BigInteger, BigInteger>> getSplits(
-      Configuration conf, String tblName) throws IOException {
+      Configuration conf, String tblName) throws IOException, NoSuchMethodException {
     HTable table = new HTable(conf, tblName);
     Path hbDir = new Path(table.getConfiguration().get(HConstants.HBASE_DIR));
     Path tableDir = HTableDescriptor.getTableDir(hbDir, table.getTableName());

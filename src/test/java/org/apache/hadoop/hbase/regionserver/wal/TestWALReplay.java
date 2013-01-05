@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,6 +50,7 @@ import org.apache.hadoop.hbase.monitoring.MonitoredTask;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.HRegionServer;
 import org.apache.hadoop.hbase.regionserver.Store;
+import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.EnvironmentEdge;
 import org.apache.hadoop.hbase.util.EnvironmentEdgeManager;
@@ -183,14 +185,15 @@ public class TestWALReplay {
    * @throws NoSuchFieldException
    * @throws IllegalArgumentException
    * @throws SecurityException
+   * @throws InterruptedException 
    */
   @Test
   public void testRegionMadeOfBulkLoadedFilesOnly()
   throws IOException, SecurityException, IllegalArgumentException,
-      NoSuchFieldException, IllegalAccessException {
+      NoSuchFieldException, IllegalAccessException, InterruptedException {
     final String tableNameStr = "testReplayEditsWrittenViaHRegion";
-    HRegionInfo hri = createBasic3FamilyHRegionInfo(tableNameStr);
-    Path basedir = new Path(this.hbaseRootDir, tableNameStr);
+    final HRegionInfo hri = createBasic3FamilyHRegionInfo(tableNameStr);
+    final Path basedir = new Path(this.hbaseRootDir, tableNameStr);
     deleteDir(basedir);
     HLog wal = createWAL(this.conf);
     HRegion region = HRegion.openHRegion(hri, basedir, wal, this.conf);
@@ -207,18 +210,23 @@ public class TestWALReplay {
     wal.sync();
 
     // Now 'crash' the region by stealing its wal
-    Configuration newConf = HBaseTestingUtility.setDifferentUser(this.conf);
-    runWALSplit(newConf);
-    HLog wal2 = createWAL(newConf);
-    HRegion region2 = new HRegion(basedir, wal2, FileSystem.get(newConf),
-      newConf, hri, null);
-    long seqid2 = region2.initialize();
-    assertTrue(seqid2 > -1);
+    final Configuration newConf = HBaseConfiguration.create(this.conf);
+    User user = HBaseTestingUtility.getDifferentUser(this.conf);
+    user.runAs(new PrivilegedExceptionAction() {
+      public Object run() throws Exception {
+        runWALSplit(newConf);
+        HLog wal2 = createWAL(newConf);
+        HRegion region2 = new HRegion(basedir, wal2, FileSystem.get(newConf), newConf, hri, null);
+        long seqid2 = region2.initialize();
+        assertTrue(seqid2 > -1);
 
-    // I can't close wal1.  Its been appropriated when we split.
-    region2.close();
-    wal2.closeAndDelete();
-  }
+        // I can't close wal1. Its been appropriated when we split.
+        region2.close();
+        wal2.closeAndDelete();
+        return null;
+      }
+    });
+}
 
   /**
    * Test writing edits into an HRegion, closing it, splitting logs, opening
@@ -290,7 +298,8 @@ public class TestWALReplay {
     // Set down maximum recovery so we dfsclient doesn't linger retrying something
     // long gone.
     HBaseTestingUtility.setMaxRecoveryErrorCount(wal2.getOutputStream(), 1);
-    Configuration newConf = HBaseTestingUtility.setDifferentUser(this.conf);
+    Configuration newConf = HBaseConfiguration.create(this.conf);
+    User user = HBaseTestingUtility.getDifferentUser(this.conf);
     runWALSplit(newConf);
     FileSystem newFS = FileSystem.get(newConf);
     // Make a new wal for new region open.
@@ -405,10 +414,10 @@ public class TestWALReplay {
   @Test
   public void testReplayEditsWrittenIntoWAL() throws Exception {
     final String tableNameStr = "testReplayEditsWrittenIntoWAL";
-    HRegionInfo hri = createBasic3FamilyHRegionInfo(tableNameStr);
-    Path basedir = new Path(hbaseRootDir, tableNameStr);
+    final HRegionInfo hri = createBasic3FamilyHRegionInfo(tableNameStr);
+    final Path basedir = new Path(hbaseRootDir, tableNameStr);
     deleteDir(basedir);
-    HLog wal = createWAL(this.conf);
+    final HLog wal = createWAL(this.conf);
     final byte[] tableName = Bytes.toBytes(tableNameStr);
     final byte[] rowName = tableName;
     final byte[] regionName = hri.getRegionName();
@@ -445,40 +454,47 @@ public class TestWALReplay {
 
     // Make a new conf and a new fs for the splitter to run on so we can take
     // over old wal.
-    Configuration newConf = HBaseTestingUtility.setDifferentUser(this.conf);
-    runWALSplit(newConf);
-    FileSystem newFS = FileSystem.get(newConf);
-    // 100k seems to make for about 4 flushes during HRegion#initialize.
-    newConf.setInt("hbase.hregion.memstore.flush.size", 1024 * 100);
-    // Make a new wal for new region.
-    HLog newWal = createWAL(newConf);
-    final AtomicInteger flushcount = new AtomicInteger(0);
-    try {
-      final HRegion region = new HRegion(basedir, newWal, newFS, newConf, hri,
-          null) {
-        protected boolean internalFlushcache(HLog wal, long myseqid,
-            MonitoredTask status)
-        throws IOException {
-          boolean b = super.internalFlushcache(wal, myseqid,
-              Mockito.mock(MonitoredTask.class));
-          flushcount.incrementAndGet();
-          return b;
-        };
-      };
-      long seqid = region.initialize();
-      // We flushed during init.
-      assertTrue(flushcount.get() > 0);
-      assertTrue(seqid > wal.getSequenceNumber());
+    final Configuration newConf = HBaseConfiguration.create();
+    User user = HBaseTestingUtility.getDifferentUser(this.conf);
+    user.runAs(new PrivilegedExceptionAction() {
+       public Object run() throws Exception{
+         runWALSplit(newConf);
+         FileSystem newFS = FileSystem.get(newConf);
+         // 100k seems to make for about 4 flushes during HRegion#initialize.
+         newConf.setInt("hbase.hregion.memstore.flush.size", 1024 * 100);
+         // Make a new wal for new region.
+         HLog newWal = createWAL(newConf);
+         final AtomicInteger flushcount = new AtomicInteger(0);
+         try {
+           final HRegion region = new HRegion(basedir, newWal, newFS, newConf, hri,
+               null) {
+             protected boolean internalFlushcache(HLog wal, long myseqid,
+                 MonitoredTask status)
+             throws IOException {
+               boolean b = super.internalFlushcache(wal, myseqid,
+                   Mockito.mock(MonitoredTask.class));
+               flushcount.incrementAndGet();
+               return b;
+             };
+           };
+           long seqid = region.initialize();
+           // We flushed during init.
+           assertTrue(flushcount.get() > 0);
+           assertTrue(seqid > wal.getSequenceNumber());
 
-      Get get = new Get(rowName);
-      Result result = region.get(get, -1);
-      // Make sure we only see the good edits
-      assertEquals(countPerFamily * (hri.getTableDesc().getFamilies().size() - 1),
-        result.size());
-      region.close();
-    } finally {
-      newWal.closeAndDelete();
-    }
+           Get get = new Get(rowName);
+           Result result = region.get(get, -1);
+           // Make sure we only see the good edits
+           assertEquals(countPerFamily * (hri.getTableDesc().getFamilies().size() - 1),
+             result.size());
+           region.close();
+         } finally {
+           newWal.closeAndDelete();
+         }
+        return null;
+       }
+    });
+    
   }
 
   /**
