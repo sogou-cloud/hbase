@@ -20,6 +20,7 @@
 package org.apache.hadoop.hbase;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -170,34 +171,16 @@ public class MiniHBaseCluster {
   public static class MiniHBaseClusterRegionServer extends HRegionServer {
     private static int index = 0;
     private Thread shutdownThread = null;
-
+    private User user = null;
+    
     public MiniHBaseClusterRegionServer(Configuration conf)
         throws IOException {
-      super(setDifferentUser(conf));
+      super(conf);
+      this.user = User.getCurrent();
     }
 
     public void setHServerInfo(final HServerInfo hsi) {
       this.serverInfo = hsi;
-    }
-
-    /*
-     * @param c
-     * @param currentfs We return this if we did not make a new one.
-     * @param uniqueName Same name used to help identify the created fs.
-     * @return A new fs instance if we are up on DistributeFileSystem.
-     * @throws IOException
-     */
-    private static Configuration setDifferentUser(final Configuration c)
-    throws IOException {
-      FileSystem currentfs = FileSystem.get(c);
-      if (!(currentfs instanceof DistributedFileSystem)) return c;
-      // Else distributed filesystem.  Make a new instance per daemon.  Below
-      // code is taken from the AppendTestUtil over in hdfs.
-      Configuration c2 = new Configuration(c);
-      String username = User.getCurrent().getName() + "-hrs-" + index++;
-      User user = User.createUserForTesting(c, username,
-    	        new String[]{"supergroup"});
-      return c2;
     }
 
     @Override
@@ -210,7 +193,14 @@ public class MiniHBaseCluster {
     @Override
     public void run() {
       try {
-        super.run();
+        this.user.runAs(new PrivilegedAction<Object>() {
+          public Object run() {
+            runRegionServer();
+            return null;
+          }
+        });
+      } catch (Throwable t) {
+        LOG.error("Exception in run", t);
       } finally {
         // Run this on the way out.
         if (this.shutdownThread != null) {
@@ -218,6 +208,10 @@ public class MiniHBaseCluster {
           Threads.shutdown(this.shutdownThread, 30000);
         }
       }
+    }
+
+    private void runRegionServer() {
+      super.run();
     }
 
     public void kill() {

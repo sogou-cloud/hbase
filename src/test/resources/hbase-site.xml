@@ -162,4 +162,20 @@
     Use a lot of retries in unit tests.
     </description>
   </property>
+
+  <property>
+    <name>fs.hdfs.impl.disable.cache</name>
+    <value>true</value>
+  </property>
+
+  <property> 
+    <name>dfs.support.broken.append</name> 
+    <value>true</value> 
+  </property>
+
+  <property> 
+    <name>dfs.support.append</name> 
+    <value>true</value> 
+  </property>
+
 </configuration>

@@ -454,7 +454,7 @@ public class TestWALReplay {
 
     // Make a new conf and a new fs for the splitter to run on so we can take
     // over old wal.
-    final Configuration newConf = HBaseConfiguration.create();
+    final Configuration newConf = HBaseConfiguration.create(this.conf);
     User user = HBaseTestingUtility.getDifferentUser(this.conf);
     user.runAs(new PrivilegedExceptionAction() {
        public Object run() throws Exception{
