@@ -89,7 +89,8 @@ public class TestZooKeeper {
    * @throws IOException
    * @throws InterruptedException
    */
-  @Test (timeout = 300000)
+  // fails frequently, disabled for now, see HBASE-6406
+  // @Test (timeout = 300000)
   public void testClientSessionExpired()
       throws IOException, InterruptedException {
     new HTable(conf, HConstants.META_TABLE_NAME);
