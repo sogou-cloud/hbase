@@ -168,6 +168,49 @@
         <jdk>/usr/local/jdk-7u6-64</jdk>
       </properties>
     </profile>
+    <profile>
+      <id>rpm</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>build-rpm</id>
+                <phase>package</phase>
+                <configuration>
+                <target>
+                  <ant antfile="${basedir}/src/packages/build.xml">
+                    <target name="package-rpm"/>
+                    <!--target name="package-conf-pseudo-rpm"/-->
+                  </ant>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <!--plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.6.1</version>
+            <configuration>
+              <docfilessubdirs>true</docfilessubdirs>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>javadoc</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin-->
+        </plugins>
+      </build>
+    </profile>
   </profiles>
   
   <repositories>
@@ -292,6 +335,7 @@
         <directory>src/main/resources/</directory>
         <includes>
           <include>hbase-default.xml</include>
+          <include>hbase-compactions.xml</include>
         </includes>
       </resource>
       <resource>
@@ -305,23 +349,22 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <!-- THIS might not be doable
-        <executions>
+        <configuration>
+          <tarLongFileMode>gnu</tarLongFileMode>
+	  <appendAssemblyId>false</appendAssemblyId>
+          <descriptors>
+            <descriptor>src/assembly/all.xml</descriptor>
+          </descriptors>
+        </configuration>
+	<executions>
           <execution>
+            <id>tarball</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
             </goals>
           </execution>
         </executions>
-        -->
-        <configuration>
-          <tarLongFileMode>gnu</tarLongFileMode>
-          <descriptors>
-            <descriptor>src/assembly/bin.xml</descriptor>
-            <descriptor>src/assembly/src.xml</descriptor>
-          </descriptors>
-        </configuration>
       </plugin>
 
       <!-- Run with -Dmaven.test.skip.exec=true to build -tests.jar without running tests (this is needed for upstream projects whose tests need this jar simply for compilation)-->
@@ -498,7 +541,7 @@
   <properties>
     <compileSource>1.6</compileSource>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hbase.version>0.21.0-SNAPSHOT</hbase.version>
+    <hbase.version>0.89-fb.0-SNAPSHOT</hbase.version>
     <hadoop.version>0.20.2-cdh3u4</hadoop.version>
 
     <commons-cli.version>1.2</commons-cli.version>
@@ -525,6 +568,15 @@
     <stax-api>1.0.1</stax-api>
     <thrift.version>0.8.0</thrift.version>
     <guava.version>r09</guava.version>
+
+    <package.prefix>/usr</package.prefix>
+    <package.conf.dir>/etc/hbase</package.conf.dir>
+    <package.log.dir>/var/log/hbase</package.log.dir>
+    <package.pid.dir>/var/run/hbase</package.pid.dir>
+    <package.release>1</package.release>
+    <!-- also must update this when we bump version -->
+    <package.version>0.89-fb.0</package.version>
+    <final.name>${project.artifactId}-${project.version}</final.name>
   </properties>
 
   <dependencyManagement>
