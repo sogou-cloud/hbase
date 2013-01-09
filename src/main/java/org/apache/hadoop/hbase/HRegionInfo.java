@@ -584,7 +584,11 @@ public class HRegionInfo extends VersionedWritable implements WritableComparable
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    super.readFields(in);
+    //super.readFields(in);
+    byte version = in.readByte(); 
+    //if(version != 2 && version != 0)
+    //	throw new org.apache.hadoop.io.VersionMismatchException(getVersion(), version);
+
     this.endKey = Bytes.readByteArray(in);
     this.offLine = in.readBoolean();
     this.regionId = in.readLong();

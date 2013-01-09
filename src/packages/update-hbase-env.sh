@@ -127,8 +127,10 @@ if [ "${UNINSTALL}" -eq "1" ]; then
 
   rm -f ${PREFIX}/share/hbase/sbin/hbase-master
   rm -f ${PREFIX}/share/hbase/sbin/hbase-regionserver
+  rm -f ${PREFIX}/share/hbase/sbin/hbase-thrift
   rm -f /etc/init.d/hbase-master
   rm -f /etc/init.d/hbase-regionserver
+  rm -f /etc/init.d/hbase-thrift
 
 else
   # Create symlinks
@@ -145,6 +147,7 @@ else
 
   ln -sf ${PREFIX}/share/hbase/sbin/hbase-master /etc/init.d/hbase-master
   ln -sf ${PREFIX}/share/hbase/sbin/hbase-regionserver /etc/init.d/hbase-regionserver
+  ln -sf ${PREFIX}/share/hbase/sbin/hbase-thrift /etc/init.d/hbase-thrift
 
   ln -sf ${CONF_DIR}/hbase-env.sh /etc/default/hbase-env.sh
   ln -sf ${CONF_DIR}/hbase-env.sh /etc/profile.d/hbase-env.sh
@@ -175,7 +178,7 @@ else
     if [ -e /etc/lsb-release ]; then
       JAVA_HOME=`update-alternatives --config java | grep java | cut -f2 -d':' | cut -f2 -d' ' | sed -e 's/\/bin\/java//'`
     else
-      JAVA_HOME=/usr/java/default
+      JAVA_HOME=/usr/lib/jvm/java
     fi
   fi
   if [ "${JAVA_HOME}xxx" != "xxx" ]; then

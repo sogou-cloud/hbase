@@ -541,7 +541,7 @@
   <properties>
     <compileSource>1.6</compileSource>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hbase.version>0.89-fb.0-SNAPSHOT</hbase.version>
+    <hbase.version>0.89fb.0-SNAPSHOT</hbase.version>
     <hadoop.version>0.20.2-cdh3u4</hadoop.version>
 
     <commons-cli.version>1.2</commons-cli.version>
@@ -575,7 +575,7 @@
     <package.pid.dir>/var/run/hbase</package.pid.dir>
     <package.release>1</package.release>
     <!-- also must update this when we bump version -->
-    <package.version>0.89-fb.0</package.version>
+    <package.version>0.89fb.0</package.version>
     <final.name>${project.artifactId}-${project.version}</final.name>
   </properties>
 

@@ -121,6 +121,14 @@ fi
 
 CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar
 
+# detect HADOOP_HOME
+if [ -z "$HADOOP_HOME" ]; then
+  HADOOP_HOME=/usr/lib/hadoop-0.20
+fi
+
+# Add hadoop-conf to CLASSPATH
+CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/conf;
+
 add_maven_deps_to_classpath() {
   # The maven build dir is called 'target'
   target="${HBASE_HOME}/target"

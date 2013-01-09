@@ -100,6 +100,7 @@
           <token key="package.name" value="${final.name}.tar.gz" />
           <token key="package.release" value="${package.release}" />
           <token key="package.build.dir" value="${project.build.directory}/rpm/hbase/BUILD" />
+          <token key="package.build.root" value="${project.build.directory}/rpm/hbase/buildroot" />
           <token key="package.prefix" value="${package.prefix}" />
           <token key="package.conf.dir" value="${package.conf.dir}" />
           <token key="package.log.dir" value="${package.log.dir}" />

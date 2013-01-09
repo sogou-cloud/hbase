@@ -41,8 +41,13 @@
 
 # Build time settings
 %define _build_dir  @package.build.dir@
+%define _build_root @package.build.root@
 %define _final_name @final.name@
 %define debug_package %{nil}
+
+%define hadoop_home /usr/lib/hadoop-0.20
+%define lib_hadoop %{hadoop_home}/lib
+%define zookeeper_home /usr/lib/zookeeper
 
 Summary: Default HBase configuration templates
 License: Apache License, Version 2.0
@@ -57,8 +62,8 @@ Prefix: %{_prefix}
 Prefix: %{_conf_dir}
 Prefix: %{_log_dir}
 Prefix: %{_pid_dir}
-Buildroot: %{_build_dir}
-#Buildroot: /tmp/%{name}-%{version}-%{release}
+Buildroot: %{_build_root}
+#Buildroot: %{_tmppath}/%{name}-%{version}-%{release}
 Requires: sh-utils, textutils, /usr/sbin/useradd, /usr/sbin/usermod, /sbin/chkconfig, /sbin/service, hadoop
 #, jdk >= 1.6, hadoop
 AutoReqProv: no
@@ -98,6 +103,8 @@ mkdir -p ${RPM_BUILD_DIR}/etc/rc.d/init.d
 cp ${RPM_BUILD_DIR}/%{_final_name}/src/packages/update-hbase-env.sh ${RPM_BUILD_DIR}%{_share_dir}/sbin/update-hbase-env.sh
 cp ${RPM_BUILD_DIR}/%{_final_name}/src/packages/rpm/init.d/hbase-master ${RPM_BUILD_DIR}%{_share_dir}/sbin/hbase-master
 cp ${RPM_BUILD_DIR}/%{_final_name}/src/packages/rpm/init.d/hbase-regionserver ${RPM_BUILD_DIR}%{_share_dir}/sbin/hbase-regionserver
+cp ${RPM_BUILD_DIR}/%{_final_name}/src/packages/rpm/init.d/hbase-thrift ${RPM_BUILD_DIR}%{_share_dir}/sbin/hbase-thrift
+
 chmod 0755 ${RPM_BUILD_DIR}%{_share_dir}/sbin/*
 rm -f ${RPM_BUILD_DIR}/%{_final_name}/*.txt
 rm -f ${RPM_BUILD_DIR}/%{_final_name}/pom.xml
@@ -131,6 +138,16 @@ ${RPM_INSTALL_PREFIX0}/share/hbase/sbin/update-hbase-env.sh \
        --conf-dir=${RPM_INSTALL_PREFIX1} \
        --log-dir=${RPM_INSTALL_PREFIX2} \
        --pid-dir=${RPM_INSTALL_PREFIX3}
+# Pull zookeeper and hadoop from their packages
+rm -f ${RPM_INSTALL_PREFIX0}/share/hbase/lib/hadoop* \
+      ${RPM_INSTALL_PREFIX0}/share/hbase/lib/zookeeper*
+
+ln -s -f %{hadoop_home}/hadoop-core.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/hadoop-core.jar
+ln -s -f %{zookeeper_home}/zookeeper.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/zookeeper.jar
+# Pull hadoop native lib's
+ln -s -f %{lib_hadoop}/toddlipcon-hadoop-lzo.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/toddlipcon-hadoop-lzo.jar
+ln -s -f %{lib_hadoop}/hadoop-raid.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/hadoop-raid.jar
+ln -s -f %{lib_hadoop}/native ${RPM_INSTALL_PREFIX0}/share/hbase/lib/native
 
 %files
 %defattr(-,root,root)
