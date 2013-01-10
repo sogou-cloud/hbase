@@ -288,6 +288,46 @@ public class Result implements Writable, WritableWithSize {
   }
 
   /**
+   * Return the KeyValues for the specific column.  The KeyValues are sorted in
+   * the {@link KeyValue#COMPARATOR} order.  That implies the first entry in
+   * the list is the most recent column.  If the query (Scan or Get) only
+   * requested 1 version the list will contain at most 1 entry.  If the column
+   * did not exist in the result set (either the column does not exist
+   * or the column was not selected in the query) the list will be empty.
+   *
+   * Also see getColumnLatest which returns just a KeyValue
+   *
+   * @param family the family
+   * @param qualifier
+   * @return a list of KeyValues for this column or empty list if the column
+   * did not exist in the result set
+   */
+  public List<KeyValue> getColumn(byte [] family, byte [] qualifier) {
+    List<KeyValue> result = new ArrayList<KeyValue>();
+
+    KeyValue [] kvs = raw();
+
+    if (kvs == null || kvs.length == 0) {
+      return result;
+    }
+    int pos = binarySearch(kvs, family, qualifier);
+    if (pos == -1) {
+      return result; // cant find it
+    }
+
+    for (int i = pos ; i < kvs.length ; i++ ) {
+      KeyValue kv = kvs[i];
+      if (kv.matchingColumn(family,qualifier)) {
+        result.add(kv);
+      } else {
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * The KeyValue for the most recent for a given column. If the column does
    * not exist in the result set - if it wasn't selected in the query (Get/Scan)
    * or just does not exist in the row the return value is null.
@@ -615,4 +655,32 @@ public class Result implements Writable, WritableWithSize {
     }
     return results;
   }
+
+  /**
+   * Does a deep comparison of two Results, down to the byte arrays.
+   * @param res1 first result to compare
+   * @param res2 second result to compare
+   * @throws Exception Every difference is throwing an exception
+   */
+  public static void compareResults(Result res1, Result res2)
+      throws Exception {
+    if (res2 == null) {
+      throw new Exception("There wasn't enough rows, we stopped at "
+          + Bytes.toStringBinary(res1.getRow()));
+    }
+    if (res1.size() != res2.size()) {
+      throw new Exception("This row doesn't have the same number of KVs: "
+          + res1.toString() + " compared to " + res2.toString());
+    }
+    KeyValue[] ourKVs = res1.raw();
+    KeyValue[] replicatedKVs = res2.raw();
+    for (int i = 0; i < res1.size(); i++) {
+      if (!ourKVs[i].equals(replicatedKVs[i]) ||
+          !Bytes.equals(ourKVs[i].getValue(), replicatedKVs[i].getValue())) {
+        throw new Exception("This result was different: "
+            + res1.toString() + " compared to " + res2.toString());
+      }
+    }
+  }
 }
+

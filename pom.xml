@@ -541,7 +541,7 @@
   <properties>
     <compileSource>1.6</compileSource>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hbase.version>0.89fb.0-SNAPSHOT</hbase.version>
+    <hbase.version>0.90-SOGOU-SNAPSHOT</hbase.version>
     <hadoop.version>0.20.2-cdh3u4</hadoop.version>
 
     <commons-cli.version>1.2</commons-cli.version>
@@ -570,12 +570,12 @@
     <guava.version>r09</guava.version>
 
     <package.prefix>/usr</package.prefix>
-    <package.conf.dir>/etc/hbase</package.conf.dir>
+    <package.conf.dir>/etc/hbase/conf</package.conf.dir>
     <package.log.dir>/var/log/hbase</package.log.dir>
     <package.pid.dir>/var/run/hbase</package.pid.dir>
     <package.release>1</package.release>
     <!-- also must update this when we bump version -->
-    <package.version>0.89fb.0</package.version>
+    <package.version>0.89fb</package.version>
     <final.name>${project.artifactId}-${project.version}</final.name>
   </properties>
 

@@ -35,7 +35,7 @@
 %define _man_dir     %{_prefix}/man
 %define _pid_dir     @package.pid.dir@
 %define _sbin_dir    %{_prefix}/sbin
-%define _share_dir   %{_prefix}/share/hbase
+%define _share_dir   %{_prefix}/lib/hbase
 %define _src_dir     %{_prefix}/src
 %define _var_dir     %{_prefix}/var/lib
 
@@ -118,7 +118,7 @@ mv -f ${RPM_BUILD_DIR}/%{_final_name}/* ${RPM_BUILD_DIR}%{_share_dir}
 cp -Rp ${RPM_BUILD_DIR}/* ${RPM_BUILD_ROOT}
 
 %preun
-${RPM_INSTALL_PREFIX0}/share/hbase/sbin/update-hbase-env.sh \
+${RPM_INSTALL_PREFIX0}/lib/hbase/sbin/update-hbase-env.sh \
        --prefix=${RPM_INSTALL_PREFIX0} \
        --bin-dir=${RPM_INSTALL_PREFIX0}/bin \
        --conf-dir=${RPM_INSTALL_PREFIX1} \
@@ -132,22 +132,22 @@ getent group hadoop 2>/dev/null >/dev/null || /usr/sbin/groupadd -r hadoop
 /usr/sbin/useradd --comment "HBase" --shell /bin/bash -M -r --groups hadoop --home %{_share_dir} hbase 2> /dev/null || :
 
 %post
-${RPM_INSTALL_PREFIX0}/share/hbase/sbin/update-hbase-env.sh \
+${RPM_INSTALL_PREFIX0}/lib/hbase/sbin/update-hbase-env.sh \
        --prefix=${RPM_INSTALL_PREFIX0} \
        --bin-dir=${RPM_INSTALL_PREFIX0}/bin \
        --conf-dir=${RPM_INSTALL_PREFIX1} \
        --log-dir=${RPM_INSTALL_PREFIX2} \
        --pid-dir=${RPM_INSTALL_PREFIX3}
 # Pull zookeeper and hadoop from their packages
-rm -f ${RPM_INSTALL_PREFIX0}/share/hbase/lib/hadoop* \
-      ${RPM_INSTALL_PREFIX0}/share/hbase/lib/zookeeper*
+rm -f ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/hadoop* \
+      ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/zookeeper*
 
-ln -s -f %{hadoop_home}/hadoop-core.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/hadoop-core.jar
-ln -s -f %{zookeeper_home}/zookeeper.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/zookeeper.jar
+ln -s -f %{hadoop_home}/hadoop-core.jar ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/hadoop-core.jar
+ln -s -f %{zookeeper_home}/zookeeper.jar ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/zookeeper.jar
 # Pull hadoop native lib's
-ln -s -f %{lib_hadoop}/toddlipcon-hadoop-lzo.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/toddlipcon-hadoop-lzo.jar
-ln -s -f %{lib_hadoop}/hadoop-raid.jar ${RPM_INSTALL_PREFIX0}/share/hbase/lib/hadoop-raid.jar
-ln -s -f %{lib_hadoop}/native ${RPM_INSTALL_PREFIX0}/share/hbase/lib/native
+ln -s -f %{lib_hadoop}/toddlipcon-hadoop-lzo.jar ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/toddlipcon-hadoop-lzo.jar
+ln -s -f %{lib_hadoop}/hadoop-raid.jar ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/hadoop-raid.jar
+ln -s -f %{lib_hadoop}/native ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/native
 
 %files
 %defattr(-,root,root)

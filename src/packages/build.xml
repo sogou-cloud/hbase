@@ -37,18 +37,18 @@
     </copy>
     <deb destfile="${project.build.directory}/${artifactId}_${package.version}-${package.release}_${os.arch}.deb" control="${basedir}/target/deb/hbase.control">
       <data src="${project.build.directory}/${final.name}.tar.gz">
-        <mapper type="prefix" strip="1" prefix="${package.prefix}/share/hbase" />
+        <mapper type="prefix" strip="1" prefix="${package.prefix}/lib/hbase" />
         <exclude name="${final.name}/conf" />
         <exclude name="${final.name}/conf/*" />
         <exclude name="${final.name}/lib/zookeeper*" />
         <exclude name="${final.name}/lib/hadoop-core*" />
         <include name="**" />
       </data>
-      <tarfileset dir="${basedir}/src/packages" filemode="755" prefix="${package.prefix}/share/hbase/sbin">
+      <tarfileset dir="${basedir}/src/packages" filemode="755" prefix="${package.prefix}/lib/hbase/sbin">
         <exclude name=".svn" />
         <include name="*.sh" />
       </tarfileset>
-      <tarfileset dir="${basedir}/src/packages/deb/init.d" filemode="755" prefix="${package.prefix}/share/hbase/sbin">
+      <tarfileset dir="${basedir}/src/packages/deb/init.d" filemode="755" prefix="${package.prefix}/lib/hbase/sbin">
         <exclude name=".svn" />
         <include name="**" />
       </tarfileset>

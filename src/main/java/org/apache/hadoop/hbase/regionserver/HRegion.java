@@ -3461,6 +3461,27 @@ public class HRegion implements HeapSize {
   }
 
   /**
+   * Open a Region.
+   * 
+   * @param info
+   *          Info for region to be opened.
+   * @param wal
+   *          HLog for region to use. This method will call
+   *          HLog#setSequenceNumber(long) passing the result of the call to
+   *          HRegion#getMinSequenceId() to ensure the log id is properly kept
+   *          up. HRegionStore does this every time it opens a new region.
+   * @param conf
+   * @return new HRegion
+   * 
+   * @throws IOException
+   */
+  public static HRegion openHRegion(final HRegionInfo info, final HLog wal,
+      final Configuration conf) throws IOException {
+    return openHRegion(info, new Path(conf.get(HConstants.HBASE_DIR)), wal,
+        conf);
+  }
+
+  /**
    * Convenience method to open a HRegion outside of an HRegionServer context.
    * @param info Info for region to be opened.
    * @param rootDir Root directory for HBase instance

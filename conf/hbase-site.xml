@@ -31,4 +31,14 @@
     <name>dfs.support.append</name>
     <value>true</value>
   </property>
+
+  <property>
+    <name>hbase.thrift.server.type</name>
+    <value>threadpool</value>
+  </property>
+
+  <property>
+    <name>hbase.regionserver.enable.serverside.profiling</name>
+    <value>true</value>
+  </property>
 </configuration>

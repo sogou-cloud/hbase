@@ -97,7 +97,7 @@ for var in PREFIX; do
 done
 
 ARCH=${ARCH:-i386}
-BIN_DIR=${BIN_DIR:-$PREFIX/share/hbase/bin}
+BIN_DIR=${BIN_DIR:-$PREFIX/lib/hbase/bin}
 CONF_DIR=${CONF_DIR:-$PREFIX/conf}
 LIB_DIR=${LIB_DIR:-$PREFIX/lib}
 LOG_DIR=${LOG_DIR:-$PREFIX/var/log}
@@ -113,41 +113,41 @@ fi
 
 if [ "${UNINSTALL}" -eq "1" ]; then
   # Remove symlinks
-  if [ "${BIN_DIR}" != "${PREFIX}/share/hbase/bin" ]; then
-    for var in `ls ${PREFIX}/share/hbase/bin`; do
+  if [ "${BIN_DIR}" != "${PREFIX}/lib/hbase/bin" ]; then
+    for var in `ls ${PREFIX}/lib/hbase/bin`; do
       rm -f ${BIN_DIR}/${var}
     done
   fi
   if [ -f /etc/default/hbase-env.sh ]; then
     rm -f /etc/default/hbase-env.sh
   fi
-  if [ "${CONF_DIR}" != "${PREFIX}/share/hbase/conf" ]; then
-    rm -f ${PREFIX}/share/hbase/conf
+  if [ "${CONF_DIR}" != "${PREFIX}/lib/hbase/conf" ]; then
+    rm -f ${PREFIX}/lib/hbase/conf
   fi
 
-  rm -f ${PREFIX}/share/hbase/sbin/hbase-master
-  rm -f ${PREFIX}/share/hbase/sbin/hbase-regionserver
-  rm -f ${PREFIX}/share/hbase/sbin/hbase-thrift
+  rm -f ${PREFIX}/lib/hbase/sbin/hbase-master
+  rm -f ${PREFIX}/lib/hbase/sbin/hbase-regionserver
+  rm -f ${PREFIX}/lib/hbase/sbin/hbase-thrift
   rm -f /etc/init.d/hbase-master
   rm -f /etc/init.d/hbase-regionserver
   rm -f /etc/init.d/hbase-thrift
 
 else
   # Create symlinks
-  if [ "${BIN_DIR}" != "${PREFIX}/share/hbase/bin" ]; then
-    for var in `ls ${PREFIX}/share/hbase/bin`; do
-      ln -sf ${PREFIX}/share/hbase/bin/${var} ${BIN_DIR}/${var}
+  if [ "${BIN_DIR}" != "${PREFIX}/lib/hbase/bin" ]; then
+    for var in `ls ${PREFIX}/lib/hbase/bin`; do
+      ln -sf ${PREFIX}/lib/hbase/bin/${var} ${BIN_DIR}/${var}
     done
   fi
-  if [ "${CONF_DIR}" != "${PREFIX}/share/hbase/conf" ]; then
-    ln -sf ${CONF_DIR} ${PREFIX}/share/hbase/conf
+  if [ "${CONF_DIR}" != "${PREFIX}/lib/hbase/conf" ]; then
+    ln -sf ${CONF_DIR} ${PREFIX}/lib/hbase/conf
   fi
 
-  chmod 755 ${PREFIX}/share/hbase/sbin/*
+  chmod 755 ${PREFIX}/lib/hbase/sbin/*
 
-  ln -sf ${PREFIX}/share/hbase/sbin/hbase-master /etc/init.d/hbase-master
-  ln -sf ${PREFIX}/share/hbase/sbin/hbase-regionserver /etc/init.d/hbase-regionserver
-  ln -sf ${PREFIX}/share/hbase/sbin/hbase-thrift /etc/init.d/hbase-thrift
+  ln -sf ${PREFIX}/lib/hbase/sbin/hbase-master /etc/init.d/hbase-master
+  ln -sf ${PREFIX}/lib/hbase/sbin/hbase-regionserver /etc/init.d/hbase-regionserver
+  ln -sf ${PREFIX}/lib/hbase/sbin/hbase-thrift /etc/init.d/hbase-thrift
 
   ln -sf ${CONF_DIR}/hbase-env.sh /etc/default/hbase-env.sh
   ln -sf ${CONF_DIR}/hbase-env.sh /etc/profile.d/hbase-env.sh
@@ -156,8 +156,8 @@ else
     HADOOP_JARS=`ls ${HADOOP_HOME}/*.jar | tr '\n' ':'`
   fi
 
-  if [ -n "${ZOOKEEPER_HOME}" -a -d "${ZOOKEEPER_HOME}/share/zookeeper" ]; then
-    ZOOKEEPER_JARS=`ls ${ZOOKEEPER_HOME}/share/zookeeper/*.jar | tr '\n' ':'`
+  if [ -n "${ZOOKEEPER_HOME}" -a -d "${ZOOKEEPER_HOME}/lib/zookeeper" ]; then
+    ZOOKEEPER_JARS=`ls ${ZOOKEEPER_HOME}/lib/zookeeper/*.jar | tr '\n' ':'`
   fi
 
   mkdir -p ${PID_DIR}
@@ -185,7 +185,7 @@ else
     echo "export JAVA_HOME=${JAVA_HOME}" >> ${TFILE}
   fi
   echo "export HBASE_IDENT_STRING=\`whoami\`" >> ${TFILE}
-  echo "export HBASE_HOME=${PREFIX}/share/hbase" >> ${TFILE}
+  echo "export HBASE_HOME=${PREFIX}/lib/hbase" >> ${TFILE}
   echo "export HBASE_CONF_DIR=${CONF_DIR}" >> ${TFILE}
   echo "export HBASE_CLASSPATH=${CONF_DIR}:${HADOOP_CONF_DIR}:${HADOOP_JARS}:${ZOOKEEPER_JARS}" >> ${TFILE}
   echo "export HBASE_MANAGES_ZK=false" >> ${TFILE}
