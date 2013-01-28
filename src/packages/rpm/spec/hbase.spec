@@ -17,7 +17,7 @@
 # RPM Spec file for HBase version @version@
 #
 
-%define name         hbase
+%define name         hadoop-hbase
 %define version      @version@
 %define release      @package.release@
 

@@ -573,9 +573,10 @@
     <package.conf.dir>/etc/hbase/conf</package.conf.dir>
     <package.log.dir>/var/log/hbase</package.log.dir>
     <package.pid.dir>/var/run/hbase</package.pid.dir>
-    <package.release>1</package.release>
+    <package.release>5</package.release>
     <!-- also must update this when we bump version -->
-    <package.version>0.89fb</package.version>
+    <!--package.version>0.89fb</package.version-->
+    <package.version>0.90.4+sogou.fb</package.version>
     <final.name>${project.artifactId}-${project.version}</final.name>
   </properties>
 
