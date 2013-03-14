@@ -70,7 +70,10 @@ class SplitRequest implements Runnable {
       oldRegionInfo.setOffline(true);
       oldRegionInfo.setSplit(true);
       // Inform the HRegionServer that the parent HRegion is no-longer online.
-      server.removeFromOnlineRegions(oldRegionInfo);
+      HRegion oldRegion = server.removeFromOnlineRegions(oldRegionInfo);
+      if (oldRegion == null) {
+        throw new IOException("region " + oldRegionInfo + " already offline");
+      }
 
       Put put = new Put(oldRegionInfo.getRegionName());
       put.add(HConstants.CATALOG_FAMILY, HConstants.REGIONINFO_QUALIFIER,

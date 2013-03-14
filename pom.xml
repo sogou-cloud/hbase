@@ -215,9 +215,9 @@
   
   <repositories>
     <repository>
-      <id>cloudera.repos</id>
-      <name>Cloudera Repos</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+      <id>sogou-cloud.repos</id>
+      <name>Sogou-Cloud Repos</name>
+      <url>http://cloud.sogou-inc.com/nexus/content/groups/public</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -542,7 +542,7 @@
     <compileSource>1.6</compileSource>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <hbase.version>0.90-SOGOU-SNAPSHOT</hbase.version>
-    <hadoop.version>0.20.2-cdh3u4</hadoop.version>
+    <hadoop.version>0.20.2-cdh3u4-sogou</hadoop.version>
 
     <commons-cli.version>1.2</commons-cli.version>
     <commons-io.version>2.1</commons-io.version>
@@ -573,7 +573,7 @@
     <package.conf.dir>/etc/hbase/conf</package.conf.dir>
     <package.log.dir>/var/log/hbase</package.log.dir>
     <package.pid.dir>/var/run/hbase</package.pid.dir>
-    <package.release>5</package.release>
+    <package.release>6</package.release>
     <!-- also must update this when we bump version -->
     <!--package.version>0.89fb</package.version-->
     <package.version>0.90.4+sogou.fb</package.version>
@@ -918,20 +918,15 @@
   -->
   <distributionManagement>
     <repository>
-      <id>apache.releases.https</id>
-      <name>Apache Release Distribution Repository</name>
-      <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+      <id>sogou.cloud.releases</id>
+      <name>Sogou Cloud Distribution Repository</name>
+      <url>http://cloud.sogou-inc.com/nexus/content/repositories/Releases</url>
     </repository>
     <snapshotRepository>
-      <id>apache.snapshots.https</id>
-      <name>Apache Development Snapshot Repository</name>
-      <url>https://repository.apache.org/content/repositories/snapshots</url>
+      <id>sogou.cloud.snapshots</id>
+      <name>Sogou Cloud Distribution Repository</name>
+      <url>http://cloud.sogou-inc.com/nexus/content/repositories/snapshots</url>
     </snapshotRepository>
-    <!-- Private Site Repository -->
-    <site>
-      <id>HBase Site</id>
-      <url>scp://people.apache.org/home/psmith/public_html/hbase/sandbox/hbase/</url>
-    </site>
   </distributionManagement>
 
   <!-- See http://jira.codehaus.org/browse/MSITE-443 why the settings need to be here and not in pluginManagement. -->

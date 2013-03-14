@@ -275,7 +275,7 @@ public final class HConstants {
     "hbase.hregionserver.hlog.split.workers.num";
 
   /** Default maximum file size */
-  public static final long DEFAULT_MAX_FILE_SIZE = 256 * 1024 * 1024;
+  public static final long DEFAULT_MAX_FILE_SIZE = 8 * 1024 * 1024 * 1024;
   
   /** Default minimum number of files to be compacted */
   public static final int DEFAULT_MIN_FILES_TO_COMPACT = 3;

@@ -44,6 +44,8 @@ public class CompactSplitThread {
   private final ThreadPoolExecutor smallCompactions;
   private final ThreadPoolExecutor splits;
 
+  private int regionSplitLimit;
+
   /* The default priority for user-specified compaction requests.
    * The user gets top priority unless we have blocking compactions (Pri <= 0)
    */
@@ -76,6 +78,8 @@ public class CompactSplitThread {
 
     this.splits = (ThreadPoolExecutor) Executors
         .newFixedThreadPool(splitThreads);
+
+    this.regionSplitLimit = conf.getInt("hbase.regionserver.regionSplitLimit", Integer.MAX_VALUE);
   }
 
   @Override
@@ -90,7 +94,7 @@ public class CompactSplitThread {
 
   public synchronized boolean requestSplit(final HRegion r) {
     // don't split regions that are blocking
-    if (r.getCompactPriority() >= PRIORITY_USER) {
+    if (shouldSplitRegion() && r.getCompactPriority() >= PRIORITY_USER) {
       byte[] midKey = r.checkSplit();
       if (midKey != null) {
         requestSplit(r, midKey);
@@ -100,7 +104,12 @@ public class CompactSplitThread {
     return false;
   }
 
+  private boolean shouldSplitRegion() {
+    return regionSplitLimit > server.getNumberOfOnlineRegions();
+  }
+
   public synchronized void requestSplit(final HRegion r, byte[] midKey) {
+    if (midKey == null) return;
     try {
       this.splits.execute(new SplitRequest(r, midKey));
       if (LOG.isDebugEnabled()) {

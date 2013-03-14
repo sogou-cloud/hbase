@@ -1565,7 +1565,7 @@ public class Store extends SchemaConfigured implements HeapSize {
   public byte[] checkSplit() {
     this.lock.readLock().lock();
     try {
-      boolean force = this.region.shouldSplit();
+      boolean force = this.region.shouldForceSplit();
       // sanity checks
       if (!force) {
         if (storeSize < this.desiredMaxFileSize || this.storefiles.isEmpty()) {
@@ -1608,8 +1608,8 @@ public class Store extends SchemaConfigured implements HeapSize {
         }
       }
       // if the user explicit set a split point, use that
-      if (this.region.getSplitPoint() != null) {
-        return this.region.getSplitPoint();
+      if (this.region.getExplicitSplitPoint() != null) {
+        return this.region.getExplicitSplitPoint();
       }
       StoreFile.Reader r = largestSf.getReader();
       if (r == null) {
@@ -1914,5 +1914,92 @@ public class Store extends SchemaConfigured implements HeapSize {
       throw new IllegalArgumentException(e);
     }
    }
+  }
+
+  public boolean canSplit() {
+    this.lock.readLock().lock();
+    try {
+      // Not splitable if we find a reference store file present in the store.
+      for (StoreFile sf : storefiles) {
+        if (sf.isReference()) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(sf + " is not splittable");
+          }
+          return false;
+        }
+      }
+
+      return true;
+    } finally {
+      this.lock.readLock().unlock();
+    }
+  }
+
+  public byte[] getSplitPoint() {
+    this.lock.readLock().lock();
+    try {
+      // sanity checks
+      if (this.storefiles.isEmpty()) {
+        return null;
+      }
+      // Should already be enforced by the split policy!
+      assert !this.region.getRegionInfo().isMetaRegion();
+
+      // Not splitable if we find a reference store file present in the store.
+      long maxSize = 0L;
+      StoreFile largestSf = null;
+      for (StoreFile sf : storefiles) {
+        if (sf.isReference()) {
+          // Should already be enforced since we return false in this case
+          assert false : "getSplitPoint() called on a region that can't split!";
+          return null;
+        }
+
+        StoreFile.Reader r = sf.getReader();
+        if (r == null) {
+          LOG.warn("Storefile " + sf + " Reader is null");
+          continue;
+        }
+
+        long size = r.length();
+        if (size > maxSize) {
+          // This is the largest one so far
+          maxSize = size;
+          largestSf = sf;
+        }
+      }
+
+      StoreFile.Reader r = largestSf.getReader();
+      if (r == null) {
+        LOG.warn("Storefile " + largestSf + " Reader is null");
+        return null;
+      }
+      // Get first, last, and mid keys. Midkey is the key that starts block
+      // in middle of hfile. Has column and timestamp. Need to return just
+      // the row we want to split on as midkey.
+      byte[] midkey = r.midkey();
+      if (midkey != null) {
+        KeyValue mk = KeyValue.createKeyValueFromKey(midkey, 0, midkey.length);
+        byte[] fk = r.getFirstKey();
+        KeyValue firstKey = KeyValue.createKeyValueFromKey(fk, 0, fk.length);
+        byte[] lk = r.getLastKey();
+        KeyValue lastKey = KeyValue.createKeyValueFromKey(lk, 0, lk.length);
+        // if the midkey is the same as the first or last keys, then we cannot
+        // (ever) split this region.
+        if (this.comparator.compareRows(mk, firstKey) == 0
+            || this.comparator.compareRows(mk, lastKey) == 0) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("cannot split because midkey is the same as first or " + "last row");
+          }
+          return null;
+        }
+        return mk.getRow();
+      }
+    } catch (IOException e) {
+      LOG.warn("Failed getting store size for " + this, e);
+    } finally {
+      this.lock.readLock().unlock();
+    }
+    return null;
   }
 }
