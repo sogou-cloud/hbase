@@ -515,6 +515,10 @@ abstract class BaseScanner extends Chore {
     }
     Path tabledir =
       new Path(this.master.getRootDir(), split.getTableDesc().getNameAsString());
+    // add by tanbokan
+    if (!this.master.getFileSystem().exists(HRegion.getRegionDir(tabledir, split.getEncodedName()))) {
+      return true;
+    }
     for (HColumnDescriptor family: split.getTableDesc().getFamilies()) {
       Path p = Store.getStoreHomedir(tabledir, split.getEncodedName(),
         family.getName());

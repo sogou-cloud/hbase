@@ -1950,8 +1950,7 @@ public class HRegionServer implements HRegionInterface,
             case MSG_REGION_SPLIT:
               region = getRegion(info.getRegionName());
               region.flushcache();
-              region.triggerSplit();
-              region.setSplitPoint(info.getSplitPoint());
+              region.forceSplit(info.getSplitPoint());
               compactSplitThread.requestSplit(region, region.checkSplit());
               break;
 
@@ -3578,5 +3577,14 @@ public class HRegionServer implements HRegionInterface,
       return s.getResponseQueueSize();
     }
     return 0;
+  }
+
+  public int getNumberOfOnlineRegions() {
+    return this.onlineRegions.size();
+  }
+
+  @Override
+  public boolean isAuthorized(String arg0) throws IOException {
+    return true;
   }
 }

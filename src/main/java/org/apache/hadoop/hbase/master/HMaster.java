@@ -2309,5 +2309,10 @@ public class HMaster extends HasThread implements HMasterInterface,
   ZKUnassignedWatcher getUnassignedWatcher() {
     return unassignedWatcher;
   }
+
+  @Override
+  public boolean isAuthorized(String arg0) throws IOException {
+    return true;
+  }
 }
 

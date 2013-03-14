@@ -296,7 +296,8 @@ public class HRegion implements HeapSize {
     new ReentrantReadWriteLock();
   private final Object splitLock = new Object();
   private boolean splitRequest;
-  private byte[] splitPoint = null;
+  private byte[] explicitSplitPoint = null;
+  private long desiredMaxFileSize;
 
   private final MultiVersionConsistencyControl mvcc =
       new MultiVersionConsistencyControl();
@@ -649,6 +650,14 @@ public class HRegion implements HeapSize {
 
       this.writestate.compacting = 0;
       this.lastFlushTime = EnvironmentEdgeManager.currentTimeMillis();
+
+      long maxFileSize = getTableDesc().getMaxFileSize();
+      if (maxFileSize == HConstants.DEFAULT_MAX_FILE_SIZE) {
+        maxFileSize =
+            conf.getLong(HConstants.HREGION_MAX_FILESIZE, HConstants.DEFAULT_MAX_FILE_SIZE);
+      }
+      this.desiredMaxFileSize = maxFileSize;
+
       // Use maximum of log sequenceid or that which was found in stores
       // (particularly if no recovered edits, seqid will be -1).
       long nextSeqid = maxSeqId + 1;
@@ -3202,9 +3211,6 @@ public class HRegion implements HeapSize {
         } catch (ExecutionException e) {
           throw new IOException(e);
         }
-        if (scanResult.isException) {
-          throw scanResult.ioException;
-        }
       }
       // if there are no prefetched results, then preform the scan inline
       else {
@@ -3212,6 +3218,10 @@ public class HRegion implements HeapSize {
         scanResult = scanFetch.call();
       }
 
+      if (scanResult.isException) {
+        throw scanResult.ioException;
+      }
+      
       // schedule a background prefetch for the next result if prefetch is
       // enabled on scans
       boolean scanDone = 
@@ -4230,30 +4240,84 @@ public class HRegion implements HeapSize {
     this.splitRequest = true;
   }
 
-  boolean shouldSplit() {
+  boolean shouldForceSplit() {
     return this.splitRequest;
   }
 
-  byte[] getSplitPoint() {
-    return this.splitPoint;
+  byte[] getExplicitSplitPoint() {
+    return this.explicitSplitPoint;
   }
 
-  void setSplitPoint(byte[] sp) {
-    this.splitPoint = sp;
+  void forceSplit(byte[] sp) {
+    this.splitRequest = true;
+    if (sp != null) {
+      this.explicitSplitPoint = sp;
+    }
   }
 
   byte[] checkSplit() {
-    if (this.splitPoint != null) {
-      return this.splitPoint;
-    }
-    byte[] splitPoint = null;
-    for (Store s : stores.values()) {
-      splitPoint = s.checkSplit();
-      if (splitPoint != null) {
-        return splitPoint;
+    if (getRegionInfo().isMetaRegion()) {
+      if (shouldForceSplit()) {
+        LOG.warn("Cannot split meta regions in HBase 0.20 and above");
       }
     }
-    return null;
+    if (!shouldSplit())
+      return null;
+
+    byte[] ret = getSplitPoint();
+    if (ret != null) {
+      try {
+        checkRow(ret);
+      } catch (IOException e) {
+        LOG.error("Ignoring invalid split", e);
+        return null;
+      }
+    }
+    return ret;
+  }
+
+  private boolean shouldSplit() {
+    boolean force = shouldForceSplit();
+    boolean foundABigStore = false;
+
+    for (Store store : stores.values()) {
+      // If any of the stores are unable to split (eg they contain reference files)
+      // then don't split
+      if ((!store.canSplit())) {
+        return false;
+      }
+
+      // Mark if any store is big enough
+      if (store.getSize() > desiredMaxFileSize) {
+        foundABigStore = true;
+      }
+    }
+
+    return foundABigStore || force;
+  }
+
+  /**
+   * @return the key at which the region should be split, or null if it cannot be split. This will
+   *         only be called if shouldSplit previously returned true.
+   */
+  public byte[] getSplitPoint() {
+    byte[] explicitSplitPoint = getExplicitSplitPoint();
+    if (explicitSplitPoint != null) {
+      return explicitSplitPoint;
+    }
+
+    byte[] splitPointFromLargestStore = null;
+    long largestStoreSize = 0;
+    for (Store s : stores.values()) {
+      byte[] splitPoint = s.getSplitPoint();
+      long storeSize = s.getSize();
+      if (splitPoint != null && largestStoreSize < storeSize) {
+        splitPointFromLargestStore = splitPoint;
+        largestStoreSize = storeSize;
+      }
+    }
+
+    return splitPointFromLargestStore;
   }
 
   /**

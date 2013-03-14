@@ -200,7 +200,9 @@ public class CompactionRequest implements Comparable<CompactionRequest>,
           if (s.getCompactPriority() <= 0) {
             server.compactSplitThread
               .requestCompaction(r, s, "Recursive enqueue");
-          }
+        } else {
+          server.compactSplitThread.requestSplit(r);
+        }
         } 
       } catch (IOException ex) {
         LOG.error("Compaction failed " + this, RemoteExceptionHandler
