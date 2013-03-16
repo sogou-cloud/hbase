@@ -17,7 +17,7 @@
 # RPM Spec file for HBase version @version@
 #
 
-%define name         hadoop-hbase
+%define name         hbase
 %define version      @version@
 %define release      @package.release@
 
@@ -152,4 +152,4 @@ ln -s -f %{lib_hadoop}/native ${RPM_INSTALL_PREFIX0}/lib/hbase/lib/native
 %files
 %defattr(-,root,root)
 %{_prefix}
-%config %{_conf_dir}
+%config(noreplace) %{_conf_dir}
