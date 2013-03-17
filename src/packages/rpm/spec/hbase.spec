@@ -64,6 +64,7 @@ Prefix: %{_log_dir}
 Prefix: %{_pid_dir}
 Buildroot: %{_build_root}
 #Buildroot: %{_tmppath}/%{name}-%{version}-%{release}
+BuildArch: noarch
 Requires: sh-utils, textutils, /usr/sbin/useradd, /usr/sbin/usermod, /sbin/chkconfig, /sbin/service, hadoop
 #, jdk >= 1.6, hadoop
 AutoReqProv: no
