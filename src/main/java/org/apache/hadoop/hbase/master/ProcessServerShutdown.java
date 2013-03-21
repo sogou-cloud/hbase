@@ -130,6 +130,10 @@ class ProcessServerShutdown extends RegionServerOperation {
 
       LOG.info("Region " + regionName + " was in transition " +
           state + " on dead server " + deadServer + " - marking unassigned");
+      if (state.isPendingClose() || state.isClosed()) {
+        LOG.info("Region " + regionName + " skip marking unassigned");
+        continue;
+      }
       LOG.info(this.toString() + " setting to unassigned: " + state.getRegionInfo().toString());
       master.getRegionManager().setUnassigned(state.getRegionInfo(), true);
     }
