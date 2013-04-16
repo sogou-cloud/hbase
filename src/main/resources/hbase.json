@@ -1,0 +1,27 @@
+{
+    "queries" : [ 
+    	{
+		"objectName" : "hadoop:service=RegionServer,name=RegionServerStatistics",
+			"resultAlias": "rs.stats",
+			"attributes" : [ "compactionQueueSize","compactionSizeNumOps","compactionSizeAvgTime","regions","stores","storefiles","requests","rowReadCnt","rowUpdatedCnt","memstoreSizeMB","fsPreadLatencyNumOps","fsPreadLatencyAvgTime","fsSyncLatencyNumOps","fsSyncLatencyAvgTime","fsWriteLatencyNumOps","fsWriteLatencyAvgTime","fsWriteSizeNumOps","fsWriteSizeAvgTime","memstoreInsertNumOps","memstoreInsertAvgTime" ]
+	},
+    	{
+		"objectName" : "hadoop:service=HBase,name=RPCStatistics-60020",
+		"resultAlias": "rs.rpc",
+		"attributes" : ["openScannerNumOps","openScannerAvgTime","closeNumOps","closeAvgTime","nextNumOps","nextAvgTime","next.aboveOneSec.NumOps","next.aboveOneSec.AvgTime","putNumOps","putAvgTime","multiPutNumOps","multiPutAvgTime","multiPut.aboveOneSec.NumOps","multiPut.aboveOneSec.AvgTime","slowResponse.NumOps","slowResponse.AvgTime","getNumOps","getAvgTime","get.aboveOneSec.NumOps","get.aboveOneSec.AvgTime","deleteNumOps","deleteAvgTime","delete.aboveOneSec.NumOps","delete.aboveOneSec.AvgTime","bulkLoadHFileNumOps","bulkLoadHFileAvgTime","bulkLoadHFile.aboveOneSec.NumOps","bulkLoadHFile.aboveOneSec.AvgTime","RpcQueueTimeNumOps","RpcQueueTimeAvgTime","RpcProcessingTimeNumOps","RpcProcessingTimeAvgTime" ]
+	}
+    ],
+    "outputWriters": [
+	{
+		"@class": "org.jmxtrans.embedded.output.ConsoleWriter"
+	},
+    	{   
+		"@class": "org.jmxtrans.embedded.output.GraphiteWriter",
+		"settings": {
+			"host": "${graphite.host:cloud.sogou-inc.com}",
+			"port": "${graphite.port:2003}",
+			"namePrefix": "${graphite.namePrefix:servers.#hostname#.}"
+		}   
+	}
+    ] 
+}

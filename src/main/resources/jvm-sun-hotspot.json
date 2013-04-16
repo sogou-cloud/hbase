@@ -1,0 +1,70 @@
+{
+    "queries": [
+        {
+            "objectName": "java.lang:type=Memory",
+            "resultAlias": "jvm.memory",
+            "attributes": [
+                {
+                    "name": "HeapMemoryUsage",
+                    "keys": ["committed", "used"]
+                },
+                {
+                    "name": "NonHeapMemoryUsage",
+                    "keys": ["committed", "used"]
+                }
+            ]
+
+        },
+        {
+            "objectName": "java.lang:type=Runtime",
+            "resultAlias": "jvm.runtime",
+            "attributes": [
+                "Uptime"
+            ]
+
+        },
+        {
+            "objectName": "java.lang:type=GarbageCollector,name=*",
+            "resultAlias": "jvm.gc.%name%",
+            "attributes": [
+                "CollectionCount",
+                "CollectionTime"
+            ]
+        },
+        {
+            "objectName": "java.lang:type=Threading",
+            "resultAlias": "jvm.thread",
+            "attributes": [
+                "ThreadCount"
+            ]
+
+        },
+        {
+            "objectName": "java.lang:type=OperatingSystem",
+            "resultAlias": "jvm.os",
+            "attributes": [
+                "CommittedVirtualMemorySize",
+                "FreePhysicalMemorySize",
+                "FreeSwapSpaceSize",
+                "OpenFileDescriptorCount",
+                "ProcessCpuTime",
+                "SystemLoadAverage"
+            ]
+
+        }
+    ],
+    "outputWriters": [
+      {
+          "@class": "org.jmxtrans.embedded.output.ConsoleWriter"
+      },
+      {
+        "@class": "org.jmxtrans.embedded.output.GraphiteWriter",
+        "settings": {
+            "host": "${graphite.host:cloud.sogou-inc.com}",
+            "port": "${graphite.port:2003}",
+            "namePrefix": "${graphite.namePrefix:servers.#hostname#.}"
+        }
+      }
+    ]
+}
+

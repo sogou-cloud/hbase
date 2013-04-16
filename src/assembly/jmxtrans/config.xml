@@ -1,0 +1,20 @@
+<processor>
+    <add>
+        <after>/s:web-app/s:servlet-mapping</after>
+        <value>
+        	<![CDATA[
+            <context-param>
+                <param-name>jmxtrans.config</param-name>
+                <param-value>
+                    classpath:/jmxtrans.json
+                    classpath:/jvm-sun-hotspot.json
+                </param-value>
+            </context-param>
+
+            <listener>
+                <listener-class>org.jmxtrans.embedded.servlet.EmbeddedJmxTransLoaderListener</listener-class>
+            </listener>
+          ]]>
+        </value>
+    </add>
+</processor>

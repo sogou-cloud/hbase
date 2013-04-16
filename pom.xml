@@ -211,6 +211,37 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>jmx</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.google.code.maven-config-processor-plugin</groupId>
+            <artifactId>config-processor-maven-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+                <transformations>
+                    <transformation>
+                        <input>${project.build.directory}/hbase-webapps/regionserver/WEB-INF/web.xml</input>
+                        <output>hbase-webapps/regionserver/WEB-INF/web.xml</output>
+                        <config>src/assembly/jmxtrans/config.xml</config>
+                    </transformation>
+                </transformations>
+                <namespaceContexts>
+                  <s>http://java.sun.com/xml/ns/javaee</s>
+                </namespaceContexts>
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>process</goal>
+                    </goals>
+                </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
   
   <repositories>
@@ -326,6 +357,35 @@
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
+        </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+        	<groupId>org.eclipse.m2e</groupId>
+        	<artifactId>lifecycle-mapping</artifactId>
+        	<version>1.0.0</version>
+        	<configuration>
+        		<lifecycleMappingMetadata>
+        			<pluginExecutions>
+        				<pluginExecution>
+        					<pluginExecutionFilter>
+        						<groupId>
+        							org.apache.maven.plugins
+        						</groupId>
+        						<artifactId>
+        							maven-antrun-plugin
+        						</artifactId>
+        						<versionRange>[1.6,)</versionRange>
+        						<goals>
+        							<goal>run</goal>
+        						</goals>
+        					</pluginExecutionFilter>
+        					<action>
+        						<ignore></ignore>
+        					</action>
+        				</pluginExecution>
+        			</pluginExecutions>
+        		</lifecycleMappingMetadata>
+        	</configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -573,7 +633,7 @@
     <package.conf.dir>/etc/hbase/conf</package.conf.dir>
     <package.log.dir>/var/log/hbase</package.log.dir>
     <package.pid.dir>/var/run/hbase</package.pid.dir>
-    <package.release>6</package.release>
+    <package.release>6.3</package.release>
     <!-- also must update this when we bump version -->
     <!--package.version>0.89fb</package.version-->
     <package.version>0.90.4+sogou.fb</package.version>
@@ -794,7 +854,11 @@
       <artifactId>jasper-compiler</artifactId>
       <version>${jasper.version}</version>
     </dependency>
-
+    <dependency>
+        <groupId>org.jmxtrans.embedded</groupId>
+        <artifactId>embedded-jmxtrans</artifactId>
+        <version>1.0.6</version>
+    </dependency>
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-complete</artifactId>
@@ -927,6 +991,10 @@
       <name>Sogou Cloud Distribution Repository</name>
       <url>http://cloud.sogou-inc.com/nexus/content/repositories/snapshots</url>
     </snapshotRepository>
+    <site>
+        <id>cloud.sogou-inc.com</id>    
+        <url>scp://cloud.sogou-inc.com/api/hbase</url>
+    </site>
   </distributionManagement>
 
   <!-- See http://jira.codehaus.org/browse/MSITE-443 why the settings need to be here and not in pluginManagement. -->
@@ -977,7 +1045,7 @@
       -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
-        <version>2.1</version>
+        <version>3.2</version>
         <configuration>
           <inputEncoding>UTF-8</inputEncoding>
           <outputEncoding>UTF-8</outputEncoding>
